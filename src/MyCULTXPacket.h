@@ -27,36 +27,46 @@
  * files in the program, then also delete it here.
  */
 
-#include "../GD.h"
-#include "../MyPacket.h"
-#include "../MyCULTXPacket.h"
-#include "IIntertechnoInterface.h"
+#ifndef MYCULTXPACKET_H_
+#define MYCULTXPACKET_H_
+
+#include <homegear-base/BaseLib.h>
+
+#include "IVisitablePacket.h"
 
 namespace MyFamily
 {
 
-IIntertechnoInterface::IIntertechnoInterface(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings) : IPhysicalInterface(GD::bl, GD::family->getFamily(), settings)
+class MyCULTXPacket:
+		public BaseLib::Systems::Packet,
+		public IVisitablePacket,
+		public std::enable_shared_from_this<MyCULTXPacket>
 {
-	_bl = GD::bl;
+    public:
+	MyCULTXPacket();
+	MyCULTXPacket(std::string& rawPacket);
+	MyCULTXPacket(int32_t senderAddress, std::string& payload);
+        virtual ~MyCULTXPacket();
 
-	if(settings->listenThreadPriority == -1)
-	{
-		settings->listenThreadPriority = 0;
-		settings->listenThreadPolicy = SCHED_OTHER;
-	}
+        int32_t getChannel() { return _channel; }
+        void setChannel(int32_t value) { _channel = value; }
+        std::string getPayload() { return _payload; }
+        void setPacket(std::string& value) { _packet = value; }
+        std::string hexString();
+        uint8_t getRssi() { return _rssi; }
+        uint8_t getType() { return _type; }
 
-	std::vector<std::string> additionalCommands = BaseLib::HelperFunctions::splitAll(settings->additionalCommands, ',');
-	for(std::string& command : additionalCommands)
-	{
-		BaseLib::HelperFunctions::trim(command);
-		_additionalCommands += command + "\r\n";
-	}
+        bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) override;
+    protected:
+        std::string _packet;
+        std::string _payload;
+        int32_t _channel = -1;
+        uint8_t _rssi = 0;
+        int32_t _type = -1;
+
+};
+
+typedef std::shared_ptr<MyCULTXPacket> PMyCULTXPacket;
+
 }
-
-IIntertechnoInterface::~IIntertechnoInterface()
-{
-
-}
-
-
-}
+#endif

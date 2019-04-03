@@ -32,10 +32,12 @@
 
 #include <homegear-base/BaseLib.h>
 
+#include "IVisitablePacket.h"
+
 namespace MyFamily
 {
 
-class MyPacket : public BaseLib::Systems::Packet
+class MyPacket : public BaseLib::Systems::Packet, public IVisitablePacket, public std::enable_shared_from_this<MyPacket>
 {
     public:
         MyPacket();
@@ -49,6 +51,8 @@ class MyPacket : public BaseLib::Systems::Packet
         void setPacket(std::string& value) { _packet = value; }
         std::string hexString();
         uint8_t getRssi() { return _rssi; }
+
+        bool acceptVisitor(const std::string& senderId, const std::shared_ptr<IPacketVisitor>& visitor) override;
     protected:
         std::string _packet;
         std::string _payload;

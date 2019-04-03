@@ -27,36 +27,23 @@
  * files in the program, then also delete it here.
  */
 
-#include "../GD.h"
-#include "../MyPacket.h"
-#include "../MyCULTXPacket.h"
-#include "IIntertechnoInterface.h"
+#ifndef IPACKETVISITOR_H_
+#define IPACKETVISITOR_H_
+
 
 namespace MyFamily
 {
+	class MyPacket;
+	class MyCULTXPacket;
 
-IIntertechnoInterface::IIntertechnoInterface(std::shared_ptr<BaseLib::Systems::PhysicalInterfaceSettings> settings) : IPhysicalInterface(GD::bl, GD::family->getFamily(), settings)
-{
-	_bl = GD::bl;
-
-	if(settings->listenThreadPriority == -1)
+	class IPacketVisitor
 	{
-		settings->listenThreadPriority = 0;
-		settings->listenThreadPolicy = SCHED_OTHER;
-	}
+	public:
+		virtual ~IPacketVisitor() = default;
 
-	std::vector<std::string> additionalCommands = BaseLib::HelperFunctions::splitAll(settings->additionalCommands, ',');
-	for(std::string& command : additionalCommands)
-	{
-		BaseLib::HelperFunctions::trim(command);
-		_additionalCommands += command + "\r\n";
-	}
+		virtual bool visitPacket(const std::string& senderId, std::shared_ptr<MyPacket> packet) = 0;
+		virtual bool visitPacket(const std::string& senderId, std::shared_ptr<MyCULTXPacket> packet) = 0;
+
+	};
 }
-
-IIntertechnoInterface::~IIntertechnoInterface()
-{
-
-}
-
-
-}
+#endif
